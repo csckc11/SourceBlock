@@ -1,7 +1,6 @@
 package com.sourceblock.block.entity;
 
 import com.sourceblock.block.ItemSourceBlock;
-import com.sourceblock.block.entity.compat.MekanismItemGasHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -14,7 +13,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -51,7 +49,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
         if (level == null) return ItemStack.EMPTY;
         
         BlockState state = getBlockState();
-        ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+        ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
         
         return switch (itemType) {
             case COBBLESTONE -> new ItemStack(Items.COBBLESTONE, 64);
@@ -65,7 +63,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
     public static void serverTick(Level level, BlockPos pos, BlockState state, ItemSourceBlockEntity blockEntity) {
         if (level.isClientSide) return;
         
-        ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+        ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
         if (itemType == ItemSourceBlock.ItemType.EMPTY) return;
 
         ItemStack storedItem = blockEntity.getStoredItem();
@@ -159,7 +157,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 }
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块不返回物品
                 if (itemType == ItemSourceBlock.ItemType.EMPTY) {
@@ -183,7 +181,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 }
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块销毁所有输入的物品
                 if (itemType == ItemSourceBlock.ItemType.EMPTY) {
@@ -202,7 +200,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 }
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块不提供物品输出
                 if (itemType == ItemSourceBlock.ItemType.EMPTY) {
@@ -229,7 +227,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 if (level == null) return false;
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块接受任何物品（用于销毁）
                 return itemType == ItemSourceBlock.ItemType.EMPTY;
@@ -255,7 +253,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 if (level == null) return 0;
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块显示无限容量用于销毁流体
                 if (itemType == ItemSourceBlock.ItemType.EMPTY) {
@@ -270,7 +268,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 if (level == null) return false;
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块接受任何流体（用于销毁）
                 return itemType == ItemSourceBlock.ItemType.EMPTY;
@@ -283,7 +281,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 }
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块销毁所有输入的流体
                 if (itemType == ItemSourceBlock.ItemType.EMPTY) {
@@ -314,7 +312,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 if (level == null) return 0;
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块销毁所有输入的能量
                 if (itemType == ItemSourceBlock.ItemType.EMPTY) {
@@ -339,7 +337,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 if (level == null) return 0;
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块显示无限容量用于销毁能量
                 if (itemType == ItemSourceBlock.ItemType.EMPTY) {
@@ -359,7 +357,7 @@ public class ItemSourceBlockEntity extends BlockEntity {
                 if (level == null) return false;
                 
                 BlockState state = getBlockState();
-                ItemSourceBlock.ItemType itemType = state.getValue(ItemSourceBlock.ITEM_TYPE);
+                ItemSourceBlock.ItemType itemType = ItemSourceBlock.getItemTypeFromState(state);
                 
                 // 空源方块可以接受能量（用于销毁）
                 return itemType == ItemSourceBlock.ItemType.EMPTY;

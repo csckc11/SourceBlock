@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "sourceblock:block/cobblestone_source_block" }
+  }
+}

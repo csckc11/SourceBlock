@@ -43,12 +43,12 @@ public class SourceBlockMod {
                 output.accept(ModItems.LAVA_SOURCE_BLOCK.get());
                 output.accept(ModItems.MILK_SOURCE_BLOCK.get());
                 output.accept(ModItems.CREATIVE_SOURCE_BLOCK.get());
-                output.accept(ModItems.CREATIVE_ITEM_SOURCE_BLOCK.get());
                 output.accept(ModItems.EMPTY_ITEM_SOURCE_BLOCK.get());
                 output.accept(ModItems.COBBLESTONE_SOURCE_BLOCK.get());
                 output.accept(ModItems.STONE_SOURCE_BLOCK.get());
                 output.accept(ModItems.SMOOTH_STONE_SOURCE_BLOCK.get());
                 output.accept(ModItems.OBSIDIAN_SOURCE_BLOCK.get());
+                output.accept(ModItems.CREATIVE_ITEM_SOURCE_BLOCK.get());
             }).build());
 
     public SourceBlockMod(IEventBus modEventBus, ModContainer modContainer) {

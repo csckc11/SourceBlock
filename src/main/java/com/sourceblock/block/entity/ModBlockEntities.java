@@ -32,6 +32,11 @@ public class ModBlockEntities {
 
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<ItemSourceBlockEntity>> ITEM_SOURCE_BLOCK_ENTITY =
             BLOCK_ENTITIES.register("item_source_block_entity", () ->
-                    BlockEntityType.Builder.of(ItemSourceBlockEntity::new, ModBlocks.ITEM_SOURCE_BLOCK.get())
+                    BlockEntityType.Builder.of(ItemSourceBlockEntity::new,
+                                    ModBlocks.EMPTY_ITEM_SOURCE_BLOCK.get(),
+                                    ModBlocks.COBBLESTONE_SOURCE_BLOCK.get(),
+                                    ModBlocks.STONE_SOURCE_BLOCK.get(),
+                                    ModBlocks.SMOOTH_STONE_SOURCE_BLOCK.get(),
+                                    ModBlocks.OBSIDIAN_SOURCE_BLOCK.get())
                             .build(null));
 }

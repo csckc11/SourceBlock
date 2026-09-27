@@ -14,14 +14,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
@@ -32,12 +29,26 @@ import java.util.List;
 
 public class ItemSourceBlock extends BaseEntityBlock {
     public static final MapCodec<ItemSourceBlock> CODEC = simpleCodec(ItemSourceBlock::new);
-    public static final EnumProperty<ItemType> ITEM_TYPE = EnumProperty.create("item_type", ItemType.class);
 
+    private final ItemType itemType;
+
+    /** codec 反序列化用，默认 EMPTY（实际方块由注册名区分） */
     public ItemSourceBlock(Properties properties) {
+        this(properties, ItemType.EMPTY);
+    }
+
+    public ItemSourceBlock(Properties properties, ItemType itemType) {
         super(properties);
-        this.registerDefaultState(this.stateDefinition.any()
-            .setValue(ITEM_TYPE, ItemType.EMPTY));
+        this.itemType = itemType;
+    }
+
+    public ItemType getItemType() {
+        return this.itemType;
+    }
+
+    /** 从 BlockState 取物品类型（供 BlockEntity 使用） */
+    public static ItemType getItemTypeFromState(BlockState state) {
+        return state.getBlock() instanceof ItemSourceBlock sb ? sb.getItemType() : ItemType.EMPTY;
     }
 
     @Override
@@ -46,43 +57,29 @@ public class ItemSourceBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(ITEM_TYPE);
-    }
-
-    @Override
-    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, 
+    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state,
                                                        @NotNull Level level, @NotNull BlockPos pos,
-                                                       @NotNull Player player, @NotNull InteractionHand hand, 
+                                                       @NotNull Player player, @NotNull InteractionHand hand,
                                                        @NotNull BlockHitResult hit) {
-        ItemType currentType = state.getValue(ITEM_TYPE);
-
-        // 空手右键已填充的槽，可以获得物品
-        if (stack.isEmpty()) {
-            if (currentType == ItemType.COBBLESTONE) {
-                if (!level.isClientSide && !player.isCreative()) {
-                    player.addItem(new ItemStack(Items.COBBLESTONE));
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide);
-            } else if (currentType == ItemType.STONE) {
-                if (!level.isClientSide && !player.isCreative()) {
-                    player.addItem(new ItemStack(Items.STONE));
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide);
-            } else if (currentType == ItemType.SMOOTH_STONE) {
-                if (!level.isClientSide && !player.isCreative()) {
-                    player.addItem(new ItemStack(Items.SMOOTH_STONE));
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide);
-            } else if (currentType == ItemType.OBSIDIAN) {
-                if (!level.isClientSide && !player.isCreative()) {
-                    player.addItem(new ItemStack(Items.OBSIDIAN));
-                }
-                return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        // 空手右键已填充的方块，可以获得物品
+        if (stack.isEmpty() && this.itemType != ItemType.EMPTY) {
+            if (!level.isClientSide && !player.isCreative()) {
+                player.addItem(new ItemStack(getProducedItem()));
             }
+            return ItemInteractionResult.sidedSuccess(level.isClientSide);
         }
 
         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    private Item getProducedItem() {
+        return switch (this.itemType) {
+            case COBBLESTONE -> Items.COBBLESTONE;
+            case STONE -> Items.STONE;
+            case SMOOTH_STONE -> Items.SMOOTH_STONE;
+            case OBSIDIAN -> Items.OBSIDIAN;
+            default -> Items.AIR;
+        };
     }
 
     @Override
@@ -100,19 +97,18 @@ public class ItemSourceBlock extends BaseEntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, @NotNull BlockState state,
                                                                   @NotNull BlockEntityType<T> blockEntityType) {
-        return level.isClientSide ? null : createTickerHelper(blockEntityType, 
-            ModBlockEntities.ITEM_SOURCE_BLOCK_ENTITY.get(),
-            ItemSourceBlockEntity::serverTick);
+        return level.isClientSide ? null : createTickerHelper(blockEntityType,
+                ModBlockEntities.ITEM_SOURCE_BLOCK_ENTITY.get(),
+                ItemSourceBlockEntity::serverTick);
     }
 
     @Override
     protected @NotNull List<ItemStack> getDrops(BlockState state, LootParams.@NotNull Builder builder) {
-        return Collections.singletonList(new ItemStack(getItem(state)));
+        return Collections.singletonList(new ItemStack(getDropItem()));
     }
 
-    private Item getItem(BlockState state) {
-        ItemType itemType = state.getValue(ITEM_TYPE);
-        return switch (itemType) {
+    private Item getDropItem() {
+        return switch (this.itemType) {
             case COBBLESTONE -> ModItems.COBBLESTONE_SOURCE_BLOCK.get();
             case STONE -> ModItems.STONE_SOURCE_BLOCK.get();
             case SMOOTH_STONE -> ModItems.SMOOTH_STONE_SOURCE_BLOCK.get();
@@ -122,10 +118,10 @@ public class ItemSourceBlock extends BaseEntityBlock {
     }
 
     @Override
-    public @NotNull ItemStack getCloneItemStack(BlockState state, net.minecraft.world.phys.HitResult target, 
-                                                net.minecraft.world.level.LevelReader level, 
+    public @NotNull ItemStack getCloneItemStack(BlockState state, net.minecraft.world.phys.HitResult target,
+                                                net.minecraft.world.level.LevelReader level,
                                                 @NotNull BlockPos pos, @NotNull Player player) {
-        return new ItemStack(getItem(state));
+        return new ItemStack(getDropItem());
     }
 
     public enum ItemType implements StringRepresentable {
@@ -147,4 +143,3 @@ public class ItemSourceBlock extends BaseEntityBlock {
         }
     }
 }
-

@@ -11,6 +11,7 @@ public class ModBlocks {
     public static final DeferredRegister.Blocks BLOCKS =
             DeferredRegister.createBlocks(SourceBlockMod.MODID);
 
+    // 源方块注册扁平化
     public static final DeferredBlock<Block> EMPTY_SOURCE_BLOCK = BLOCKS.register("empty_source_block",
             () -> new SourceBlock(BlockBehaviour.Properties.of()
                     .strength(0.5F, 1200.0F)
@@ -42,15 +43,36 @@ public class ModBlocks {
                     .sound(SoundType.METAL)
                     .lightLevel((state) -> 15)));
 
+    // 物品源方块注册扁平化
+    public static final DeferredBlock<Block> EMPTY_ITEM_SOURCE_BLOCK = BLOCKS.register("empty_item_source_block",
+            () -> new ItemSourceBlock(BlockBehaviour.Properties.of()
+                    .strength(0.5F, 1200.0F)
+                    .sound(SoundType.METAL), ItemSourceBlock.ItemType.EMPTY));
+
+    public static final DeferredBlock<Block> COBBLESTONE_SOURCE_BLOCK = BLOCKS.register("cobblestone_source_block",
+            () -> new ItemSourceBlock(BlockBehaviour.Properties.of()
+                    .strength(0.5F, 1200.0F)
+                    .sound(SoundType.METAL), ItemSourceBlock.ItemType.COBBLESTONE));
+
+    public static final DeferredBlock<Block> STONE_SOURCE_BLOCK = BLOCKS.register("stone_source_block",
+            () -> new ItemSourceBlock(BlockBehaviour.Properties.of()
+                    .strength(0.5F, 1200.0F)
+                    .sound(SoundType.METAL), ItemSourceBlock.ItemType.STONE));
+
+    public static final DeferredBlock<Block> SMOOTH_STONE_SOURCE_BLOCK = BLOCKS.register("smooth_stone_source_block",
+            () -> new ItemSourceBlock(BlockBehaviour.Properties.of()
+                    .strength(0.5F, 1200.0F)
+                    .sound(SoundType.METAL), ItemSourceBlock.ItemType.SMOOTH_STONE));
+
+    public static final DeferredBlock<Block> OBSIDIAN_SOURCE_BLOCK = BLOCKS.register("obsidian_source_block",
+            () -> new ItemSourceBlock(BlockBehaviour.Properties.of()
+                    .strength(0.5F, 1200.0F)
+                    .sound(SoundType.METAL), ItemSourceBlock.ItemType.OBSIDIAN));
+
     public static final DeferredBlock<Block> CREATIVE_ITEM_SOURCE_BLOCK = BLOCKS.register("creative_item_source_block",
             () -> new CreativeItemSourceBlock(BlockBehaviour.Properties.of()
                     .strength(0.5F, 3600000.0F)
                     .noLootTable()
-                    .sound(SoundType.METAL)));
-
-    public static final DeferredBlock<Block> ITEM_SOURCE_BLOCK = BLOCKS.register("item_source_block",
-            () -> new ItemSourceBlock(BlockBehaviour.Properties.of()
-                    .strength(0.5F, 1200.0F)
                     .sound(SoundType.METAL)));
 
     /** 根据流体类型获取对应的源方块 */

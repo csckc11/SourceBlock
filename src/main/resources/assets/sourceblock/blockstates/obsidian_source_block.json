@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "sourceblock:block/obsidian_source_block" }
+  }
+}

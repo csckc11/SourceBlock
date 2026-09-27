@@ -1,0 +1,7 @@
+{
+  "parent": "block/cube_all",
+  "textures": {
+    "all": "sourceblock:block/cobblestone_source_block"
+  }
+}
+
