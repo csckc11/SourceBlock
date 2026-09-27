@@ -1,7 +1,6 @@
 {
   "parent": "block/cube_all",
   "textures": {
-    "all": "sourceblock:block/source_block_lava"
+    "all": "sourceblock:block/lava_source_block"
   }
 }
-

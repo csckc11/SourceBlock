@@ -1,6 +1,9 @@
 {
   "itemGroup.sourceblock": "Source Block",
-  "block.sourceblock.source_block": "Source Block",
+  "block.sourceblock.empty_source_block": "Empty Source Block",
+  "block.sourceblock.water_source_block": "Water Source Block",
+  "block.sourceblock.lava_source_block": "Lava Source Block",
+  "block.sourceblock.milk_source_block": "Milk Source Block",
   "block.sourceblock.creative_source_block": "Creative Source Block",
   "block.sourceblock.creative_item_source_block": "Creative Item Source Block",
   "block.sourceblock.item_source_block": "Item Source Block",

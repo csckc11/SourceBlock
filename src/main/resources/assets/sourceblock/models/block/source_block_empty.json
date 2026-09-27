@@ -1,7 +1,0 @@
-{
-  "parent": "block/cube_all",
-  "textures": {
-    "all": "sourceblock:block/source_block_empty"
-  }
-}
-

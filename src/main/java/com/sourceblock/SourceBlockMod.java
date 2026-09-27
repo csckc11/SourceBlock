@@ -3,7 +3,6 @@ package com.sourceblock;
 import com.mojang.logging.LogUtils;
 import com.sourceblock.block.ModBlocks;
 import com.sourceblock.block.entity.ModBlockEntities;
-import com.sourceblock.block.entity.SourceBlockEntity;
 import com.sourceblock.compat.MekanismCompat;
 import com.sourceblock.event.ModEvents;
 import com.sourceblock.item.ModItems;
@@ -55,19 +54,19 @@ public class SourceBlockMod {
     public SourceBlockMod(IEventBus modEventBus, ModContainer modContainer) {
         NeoForgeMod.enableMilkFluid();
 
-        // Register blocks, items, and block entities
+        // 注册方块、物品、方块实体
         ModBlocks.BLOCKS.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
 
-        // Register event handlers
+        // 注册事件监听器
         NeoForge.EVENT_BUS.register(ModEvents.class);
 
-        // Register creative mode tab contents
+        // 注册创造模式物品栏
         modEventBus.addListener(this::addCreative);
         
-        // Register capabilities
+        // 注册方块处理能力
         modEventBus.addListener(this::registerCapabilities);
         
         // 初始化Mekanism兼容性（如果Mekanism已安装）

@@ -22,37 +22,20 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * 源方块实体
- * 功能说明：
- * - 空源方块（EMPTY）：销毁所有输入的流体、气体和能量（虚空功能）
- * - 水源方块（WATER）：无限提供水，容量为Integer.MAX_VALUE
- * - 岩浆源方块（LAVA）：无限提供岩浆，容量为Integer.MAX_VALUE
- * - 牛奶源方块（MILK）：无限提供牛奶（如果安装了机械动力等模组）
- * 输出机制：
- * - 每20tick尝试向周围6个面输出流体
- * - 成功输出后该面切换为每tick输出
- * - 失败后恢复为每20tick输出
- * - 每次输出Integer.MAX_VALUE的流体量（瞬间填满）
- */
 public class SourceBlockEntity extends BlockEntity implements IFluidHandler, IEnergyStorage {
-    // 每个面的计时器
-    private int tickCounter=0;
+    private int tickCounter = 0;
     private final Map<Direction, Boolean> fastMode = new HashMap<>();
-    
+
     private static final int SLOW_INTERVAL = 20;
     private static final int FAST_INTERVAL = 1;
     private static final int TRANSFER_AMOUNT = Integer.MAX_VALUE;
     public static final int CAPACITY = Integer.MAX_VALUE;
-    
-    // 缓存牛奶流体类型（如果存在）
+
     private static Fluid cachedMilkFluid = null;
     private static boolean milkFluidChecked = false;
 
     public SourceBlockEntity(BlockPos pos, BlockState blockState) {
         super(ModBlockEntities.SOURCE_BLOCK_ENTITY.get(), pos, blockState);
-        
-        // 初始化所有面的计时器和模式
         for (Direction direction : Direction.values()) {
             fastMode.put(direction, true);
         }
@@ -61,14 +44,12 @@ public class SourceBlockEntity extends BlockEntity implements IFluidHandler, IEn
     public static void serverTick(Level level, BlockPos pos, BlockState state, SourceBlockEntity blockEntity) {
         if (level.isClientSide) return;
 
-        SourceBlock.FluidType fluidType = state.getValue(SourceBlock.FLUID_TYPE);
+        SourceBlock.FluidType fluidType = SourceBlock.getFluidTypeFromState(state);
         if (fluidType == SourceBlock.FluidType.EMPTY) return;
 
-        // 获取流体类型
         FluidStack fluidStack = getFluidStackFromType(fluidType);
         if (fluidStack.isEmpty()) return;
 
-        // 对每个面进行处理
         blockEntity.tickCounter++;
         for (Direction direction : Direction.values()) {
             boolean isFastMode = blockEntity.fastMode.get(direction);
@@ -80,34 +61,20 @@ public class SourceBlockEntity extends BlockEntity implements IFluidHandler, IEn
                 blockEntity.fastMode.put(direction, success);
             }
         }
-
         blockEntity.setChanged();
     }
 
     private static FluidStack getFluidStackFromType(SourceBlock.FluidType type) {
         return switch (type) {
             case WATER -> new FluidStack(Fluids.WATER, TRANSFER_AMOUNT);
-            case LAVA -> new FluidStack(Fluids.LAVA, TRANSFER_AMOUNT);
-            case MILK -> getMilkFluidStack();
-            default -> FluidStack.EMPTY;
+            case LAVA  -> new FluidStack(Fluids.LAVA, TRANSFER_AMOUNT);
+            case MILK  -> getMilkFluidStack();
+            default    -> FluidStack.EMPTY;
         };
     }
-    
-    /**
-     * 尝试获取牛奶流体。
-     * 支持的流体ID（按优先级）：
-     * 1. create:milk (机械动力)
-     * 2. createbigcannons:milk (机械动力大炮)
-     * 3. create_confectionery:milk (机械动力糖果)
-     * 4. 其他包含"milk"的流体
-     */
+
     private static FluidStack getMilkFluidStack() {
-        // 如果已经检查过且没找到，直接返回空
-        if (milkFluidChecked && cachedMilkFluid == null) {
-            return FluidStack.EMPTY;
-        }
-        
-        // 如果已经缓存了牛奶流体，直接使用
+        if (milkFluidChecked && cachedMilkFluid == null) return FluidStack.EMPTY;
         if (cachedMilkFluid != null && cachedMilkFluid != Fluids.EMPTY) {
             return new FluidStack(cachedMilkFluid, TRANSFER_AMOUNT);
         }
@@ -120,18 +87,11 @@ public class SourceBlockEntity extends BlockEntity implements IFluidHandler, IEn
                 return new FluidStack(forgeMilk, TRANSFER_AMOUNT);
             }
         }
-        
-        // 尝试按优先级查找牛奶流体
+
         String[] milkFluidIds = {
-            "minecraft:milk",                 // NeoForge 原生牛奶流体
-            "create:milk",                    // 机械动力
-            "createbigcannons:milk",          // 机械动力大炮
-            "create_confectionery:milk",      // 机械动力糖果
-            "ad_astra:milk",                  // Ad Astra
-            "thermal:milk",                   // 热力系列
-            "productivebees:milk"             // 生产蜜蜂
+                "minecraft:milk", "create:milk", "createbigcannons:milk",
+                "create_confectionery:milk", "ad_astra:milk", "thermal:milk", "productivebees:milk"
         };
-        
         for (String fluidId : milkFluidIds) {
             Fluid fluid = BuiltInRegistries.FLUID.get(ResourceLocation.parse(fluidId));
             if (fluid != Fluids.EMPTY) {
@@ -140,7 +100,7 @@ public class SourceBlockEntity extends BlockEntity implements IFluidHandler, IEn
                 return new FluidStack(fluid, TRANSFER_AMOUNT);
             }
         }
-        
+
         for (var entry : BuiltInRegistries.FLUID.entrySet()) {
             String id = entry.getKey().location().toString();
             String name = id.split(":")[1];
@@ -153,23 +113,18 @@ public class SourceBlockEntity extends BlockEntity implements IFluidHandler, IEn
                 }
             }
         }
-        
-        // 没有找到任何牛奶流体，标记为已检查
+
         milkFluidChecked = true;
         cachedMilkFluid = Fluids.EMPTY;
         return FluidStack.EMPTY;
     }
 
     static boolean tryTransferFluid(Level level, BlockPos pos, Direction direction, FluidStack fluidStack) {
-        // 获取目标位置的流体处理能力
         IFluidHandler handler = level.getCapability(Capabilities.FluidHandler.BLOCK, pos, direction);
-        
         if (handler != null) {
-            // 尝试填充流体
             int filled = handler.fill(fluidStack, IFluidHandler.FluidAction.EXECUTE);
             return filled > 0;
         }
-        
         return false;
     }
 
@@ -183,172 +138,97 @@ public class SourceBlockEntity extends BlockEntity implements IFluidHandler, IEn
         super.loadAdditional(tag, registries);
     }
 
-    // ========== IFluidHandler 实现 ==========
+    // ========== IFluidHandler ==========
 
-    public IFluidHandler createFluidHandler() {
-        return this;
-    }
-
-    public IEnergyStorage createEnergyStorage() {
-        return this;
-    }
+    public IFluidHandler createFluidHandler() { return this; }
+    public IEnergyStorage createEnergyStorage() { return this; }
 
     @Override
-    public int getTanks() {
-        return 1;
-    }
+    public int getTanks() { return 1; }
 
     @NotNull
     @Override
     public FluidStack getFluidInTank(int tank) {
-        if (tank != 0 || level == null) {
-            return FluidStack.EMPTY;
-        }
-        
-        BlockState state = getBlockState();
-        SourceBlock.FluidType fluidType = state.getValue(SourceBlock.FLUID_TYPE);
-        
-        // 返回"无限"容量的流体
+        if (tank != 0 || level == null) return FluidStack.EMPTY;
+        SourceBlock.FluidType fluidType = SourceBlock.getFluidTypeFromState(getBlockState());
         return switch (fluidType) {
             case WATER -> new FluidStack(Fluids.WATER, CAPACITY);
-            case LAVA -> new FluidStack(Fluids.LAVA, CAPACITY);
-            case MILK -> getMilkFluidStack(); // 尝试获取模组注册的牛奶流体
-            default -> FluidStack.EMPTY;
+            case LAVA  -> new FluidStack(Fluids.LAVA, CAPACITY);
+            case MILK  -> getMilkFluidStack();
+            default    -> FluidStack.EMPTY;
         };
     }
 
     @Override
-    public int getTankCapacity(int tank) {
-        return CAPACITY;
-    }
+    public int getTankCapacity(int tank) { return CAPACITY; }
 
     @Override
     public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
         if (level == null) return false;
-        
-        BlockState state = getBlockState();
-        SourceBlock.FluidType fluidType = state.getValue(SourceBlock.FLUID_TYPE);
-        
-        // 空源方块接受任何流体（用于销毁）
-        return fluidType == SourceBlock.FluidType.EMPTY;
-        
-        // 其他类型的源方块不接受流体输入
+        return SourceBlock.getFluidTypeFromState(getBlockState()) == SourceBlock.FluidType.EMPTY;
     }
 
     @Override
     public int fill(FluidStack resource, @NotNull FluidAction action) {
-        if (resource.isEmpty() || level == null) {
-            return 0;
-        }
-        
-        BlockState state = getBlockState();
-        SourceBlock.FluidType fluidType = state.getValue(SourceBlock.FLUID_TYPE);
-        
-        // 空源方块销毁所有输入的流体
-        if (fluidType == SourceBlock.FluidType.EMPTY) {
-            // 返回全部接受（实际上是销毁）
+        if (resource.isEmpty() || level == null) return 0;
+        if (SourceBlock.getFluidTypeFromState(getBlockState()) == SourceBlock.FluidType.EMPTY) {
             return resource.getAmount();
         }
-        
-        // 其他类型的源方块不接受流体输入
         return 0;
     }
 
     @NotNull
     @Override
     public FluidStack drain(FluidStack resource, @NotNull FluidAction action) {
-        if (resource.isEmpty() || level == null) {
-            return FluidStack.EMPTY;
-        }
-        
+        if (resource.isEmpty() || level == null) return FluidStack.EMPTY;
         FluidStack stored = getFluidInTank(0);
-        
-        // 检查请求的流体是否匹配
         if (!stored.isEmpty() && stored.getFluid() == resource.getFluid()) {
-            // 返回请求的量（无限供应）
             return new FluidStack(resource.getFluid(), resource.getAmount());
         }
-        
         return FluidStack.EMPTY;
     }
 
     @NotNull
     @Override
     public FluidStack drain(int maxDrain, @NotNull FluidAction action) {
-        if (maxDrain <= 0 || level == null) {
-            return FluidStack.EMPTY;
-        }
-        
+        if (maxDrain <= 0 || level == null) return FluidStack.EMPTY;
         FluidStack stored = getFluidInTank(0);
-        if (stored.isEmpty()) {
-            return FluidStack.EMPTY;
-        }
-        
-        // 返回请求的量（无限供应）
+        if (stored.isEmpty()) return FluidStack.EMPTY;
         return new FluidStack(stored.getFluid(), maxDrain);
     }
 
-    // ========== IEnergyStorage 实现（能量销毁/生成）==========
+    // ========== IEnergyStorage ==========
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
         if (level == null) return 0;
-        
-        BlockState state = getBlockState();
-        SourceBlock.FluidType fluidType = state.getValue(SourceBlock.FLUID_TYPE);
-        
-        // 空源方块销毁所有输入的能量
-        if (fluidType == SourceBlock.FluidType.EMPTY) {
-            // 返回全部接受（实际上是销毁）
+        if (SourceBlock.getFluidTypeFromState(getBlockState()) == SourceBlock.FluidType.EMPTY) {
             return maxReceive;
         }
-        
-        // 其他类型不接受能量输入
         return 0;
     }
 
     @Override
-    public int extractEnergy(int maxExtract, boolean simulate) {
-        // 源方块不提供能量输出（可以根据需要修改）
-        return 0;
-    }
+    public int extractEnergy(int maxExtract, boolean simulate) { return 0; }
 
     @Override
-    public int getEnergyStored() {
-        // 源方块不存储能量
-        return 0;
-    }
+    public int getEnergyStored() { return 0; }
 
     @Override
     public int getMaxEnergyStored() {
         if (level == null) return 0;
-        
-        BlockState state = getBlockState();
-        SourceBlock.FluidType fluidType = state.getValue(SourceBlock.FLUID_TYPE);
-        
-        // 空源方块显示无限容量用于销毁能量
-        if (fluidType == SourceBlock.FluidType.EMPTY) {
+        if (SourceBlock.getFluidTypeFromState(getBlockState()) == SourceBlock.FluidType.EMPTY) {
             return Integer.MAX_VALUE;
         }
-        
         return 0;
     }
 
     @Override
-    public boolean canExtract() {
-        // 不提供能量输出
-        return false;
-    }
+    public boolean canExtract() { return false; }
 
     @Override
     public boolean canReceive() {
         if (level == null) return false;
-        
-        BlockState state = getBlockState();
-        SourceBlock.FluidType fluidType = state.getValue(SourceBlock.FLUID_TYPE);
-        
-        // 空源方块可以接受能量（用于销毁）
-        return fluidType == SourceBlock.FluidType.EMPTY;
+        return SourceBlock.getFluidTypeFromState(getBlockState()) == SourceBlock.FluidType.EMPTY;
     }
 }
-

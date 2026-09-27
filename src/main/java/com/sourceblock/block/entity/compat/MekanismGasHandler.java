@@ -27,9 +27,7 @@ public class MekanismGasHandler implements IChemicalHandler {
         if (blockEntity.getLevel() == null) return false;
         
         BlockState state = blockEntity.getBlockState();
-        SourceBlock.FluidType fluidType = state.getValue(SourceBlock.FLUID_TYPE);
-        
-        return fluidType == SourceBlock.FluidType.EMPTY;
+        return SourceBlock.getFluidTypeFromState(state) == SourceBlock.FluidType.EMPTY;
     }
     
     @Override
