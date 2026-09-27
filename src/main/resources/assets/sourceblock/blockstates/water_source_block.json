@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "sourceblock:block/water_source_block" }
+  }
+}

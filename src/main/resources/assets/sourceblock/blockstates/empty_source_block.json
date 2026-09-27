@@ -1,0 +1,5 @@
+{
+  "variants": {
+    "": { "model": "sourceblock:block/empty_source_block" }
+  }
+}

@@ -3,7 +3,6 @@ package com.sourceblock.item;
 import com.sourceblock.SourceBlockMod;
 import com.sourceblock.block.ItemSourceBlock;
 import com.sourceblock.block.ModBlocks;
-import com.sourceblock.block.SourceBlock;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -14,20 +13,16 @@ public class ModItems {
         DeferredRegister.createItems(SourceBlockMod.MODID);
 
     public static final DeferredItem<BlockItem> EMPTY_SOURCE_BLOCK = ITEMS.register("empty_source_block",
-        () -> new SourceBlockItem(ModBlocks.SOURCE_BLOCK.get(), 
-            new Item.Properties(), SourceBlock.FluidType.EMPTY));
+            () -> new BlockItem(ModBlocks.EMPTY_SOURCE_BLOCK.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> WATER_SOURCE_BLOCK = ITEMS.register("water_source_block",
-        () -> new SourceBlockItem(ModBlocks.SOURCE_BLOCK.get(), 
-            new Item.Properties(), SourceBlock.FluidType.WATER));
+            () -> new BlockItem(ModBlocks.WATER_SOURCE_BLOCK.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> LAVA_SOURCE_BLOCK = ITEMS.register("lava_source_block",
-        () -> new SourceBlockItem(ModBlocks.SOURCE_BLOCK.get(), 
-            new Item.Properties(), SourceBlock.FluidType.LAVA));
+            () -> new BlockItem(ModBlocks.LAVA_SOURCE_BLOCK.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> MILK_SOURCE_BLOCK = ITEMS.register("milk_source_block",
-        () -> new SourceBlockItem(ModBlocks.SOURCE_BLOCK.get(), 
-            new Item.Properties(), SourceBlock.FluidType.MILK));
+            () -> new BlockItem(ModBlocks.MILK_SOURCE_BLOCK.get(), new Item.Properties()));
 
     public static final DeferredItem<BlockItem> CREATIVE_SOURCE_BLOCK = ITEMS.register("creative_source_block",
         () -> new BlockItem(ModBlocks.CREATIVE_SOURCE_BLOCK.get(), 
